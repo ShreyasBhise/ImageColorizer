@@ -39,6 +39,9 @@ for i in range(int(width/2)):
 
 while change:
      # assign each pixel to closest center
+     avg_clusters = [(0,0,0)]*5
+     cluster_count = [0]*5
+
      for i in range(int(width/2)):
           for j in range(height):
                p = pixels[i,j]
@@ -53,14 +56,6 @@ while change:
                          min_distance = distance
                          cluster = cluster_num
                pixel_cluster[i][j] = cluster
-     
-     
-     #compute new center for each cluster using average
-     avg_clusters = [(0,0,0)]*5
-     cluster_count = [0]*5
-     for i in range(int(width/2)):
-          for j in range(height):
-               cluster = pixel_cluster[i][j]
                cluster_count[cluster]+=1
                new_tuple = avg_clusters[cluster]
                r = new_tuple[0] + pixels[i,j][0]
@@ -68,6 +63,7 @@ while change:
                b = new_tuple[2] + pixels[i,j][2]
                avg_clusters[cluster] = (r,g,b)
      
+     #compute new center for each cluster using average
      change = False
      for i in range(5):
           if cluster_count[i]==0: continue
