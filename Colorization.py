@@ -15,11 +15,11 @@ for i in range((int)(width/2), width-1):
           pixels[i,j] = (gray, gray, gray)
 
 
-#6-means clustering for left side of the image to get 6 major colors to use
+#5-means clustering for left side of the image to get 5 major colors to use
 
-#randomly assign 6 inital centers
+#randomly assign 5 inital centers
 centers = list()
-for _ in range(6):
+for _ in range(5):
      r = random.randint(0,255)
      g = random.randint(0,255)
      b = random.randint(0,255)
@@ -43,7 +43,7 @@ while change:
           for j in range(height):
                p = pixels[i,j]
                min_distance = 500
-               for cluster_num in range(6):
+               for cluster_num in range(5):
                     center = centers[cluster_num]
                     c_r = center[0]
                     c_g = center[1]
@@ -56,8 +56,8 @@ while change:
      
      
      #compute new center for each cluster using average
-     avg_clusters = [(0,0,0)]*6
-     cluster_count = [0]*6
+     avg_clusters = [(0,0,0)]*5
+     cluster_count = [0]*5
      for i in range(int(width/2)):
           for j in range(height):
                cluster = pixel_cluster[i][j]
@@ -69,7 +69,7 @@ while change:
                avg_clusters[cluster] = (r,g,b)
      
      change = False
-     for i in range(6):
+     for i in range(5):
           if cluster_count[i]==0: continue
           new_center = avg_clusters[i]
           r = int(new_center[0]/cluster_count[i])
