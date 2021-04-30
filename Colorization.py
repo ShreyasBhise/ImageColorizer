@@ -3,19 +3,20 @@ from PIL import Image
 import random, math, numpy as np
 from collections import Counter
 
-img = Image.open('deepfriedrefried.jpg')
+image_tocolor = 'imagedeepfried.jpg'
+
+img = Image.open(image_tocolor)
 pixels = img.load()
 
-gray_img = Image.open('deepfriedrefried.jpg')
+gray_img = Image.open(image_tocolor)
 gray_pixels = gray_img.load()
 
-final_img = Image.open('deepfriedrefried.jpg')
+final_img = Image.open(image_tocolor)
 final_pixels = final_img.load()
 
 width = img.size[0]
 height = img.size[1]
 
-patch_data = list()
 
 def setup():
      for i in range(width):
@@ -24,12 +25,12 @@ def setup():
                gray = int(0.21*p[0] + 0.72*p[1] + 0.07*p[2])
                gray_pixels[i,j] = (gray, gray, gray)
 
-
+     patch_d = list()
      for i in range(width):
-          patch_data.append(list())
+          patch_d.append(list())
           for j in range(height):
                if i==0 or j==0 or i==width-1 or j==height-1:
-                    patch_data[i].append(-1)
+                    patch_d[i].append(-1)
                     continue
                neighbors = [[-1,-1], [-1,0], [-1,1], [0,-1], [0,0], [0,1], [1,-1], [1,0], [1,1]]
                patch = list()
@@ -37,7 +38,9 @@ def setup():
                     neighbor = gray_pixels[i+neighbors[_][0], j+neighbors[_][1]]
                     patch.append(neighbor[0])
                patch = np.array(patch)
-               patch_data[i].append(patch)
+               patch_d[i].append(patch)
+     global patch_data 
+     patch_data = np.array(patch_d,  dtype="object")
 
 centers = list()
 pixel_cluster = list()
@@ -71,14 +74,17 @@ def clustering():
           for i in range(int(width/2)):
                for j in range(height):
                     p = pixels[i,j]
-                    min_distance = 500
+                    min_distance = -1
                     for cluster_num in range(5):
                          center = centers[cluster_num]
                          c_r = center[0]
                          c_g = center[1]
                          c_b = center[2]
-                         distance = math.sqrt( (p[0]-c_r)**2 + (p[1]-c_g)**2 + (p[2]-c_b)**2 )
-                         if min_distance > distance:
+                         distance = (p[0]-c_r)**2 + (p[1]-c_g)**2 + (p[2]-c_b)**2
+                         if min_distance == -1:
+                              min_distance = distance
+                              cluster = cluster_num
+                         elif min_distance > distance:
                               min_distance = distance
                               cluster = cluster_num
                     pixel_cluster[i][j] = cluster
@@ -107,10 +113,13 @@ def clustering():
 def find_six_closest(patch):
      closest_values = [-1]*6
      six_closest = [-1]*6
-     for i in range(1, int(width/2)-1):
-          for j in range(1, height-1):
+     for i in range(1, int(width/2)-1,3):
+          for j in range(1, height-1,3):
                left_patch = patch_data[i][j]
-               dist = np.linalg.norm(patch-left_patch) 
+               dist = 0
+               for _ in range(9):
+                    dist += (patch[_]-left_patch[_])**2
+               # dist = np.linalg.norm(patch-left_patch) 
                
                replace = -1
                difference = -1
@@ -138,12 +147,27 @@ if __name__ == '__main__':
                final_pixels[i,j] = centers[pixel_cluster[i][j]]
 
      #For each 3x3 grayscale pixel patch in the test data (right half of the black and white image)
+     cached_similar = {}
      for i in range(int(width/2),width-1):
           for j in range(1, height-1):
                patch = patch_data[i][j]
+
+               #CACHING THE WHOLE 9 PATCH DATA
+               # try:
+               #      similar_coordinates = cached_similar[patch.tobytes()][0]
+               #      distances= cached_similar[patch.tobytes()][1]
+               # except KeyError:
                similar_coordinates, distances = find_six_closest(patch)
-               # print(distances)
-               print(similar_coordinates, (i,j))
+               #      cached_similar[patch.tobytes()] = (similar_coordinates,distances)
+
+               #CACHING THE SINGULAR GRAY PIXEL
+               # try:
+               #      similar_coordinates = cached_similar[gray_pixels[i,j][0]][0]
+               #      distances= cached_similar[gray_pixels[i,j][0]][1]
+               # except KeyError:
+               #      similar_coordinates, distances = find_six_closest(patch)
+               #      cached_similar[gray_pixels[i,j][0]] = (similar_coordinates,distances)
+               # print(similar_coordinates, (i,j))
                
                patch_colors = list()
                for _ in range(6):
