@@ -2,7 +2,7 @@ from PIL import Image
 import random, math, numpy as np
 from collections import Counter
 
-image_tocolor = 'imagedeepfried.jpg'
+image_tocolor = 'Namibia_dark_sky.jpg'
 
 img = Image.open(image_tocolor)
 pixels = img.load()
@@ -63,12 +63,12 @@ def stochastic_descent(color):
     fx = 1/(1+math.exp(-wx))
     loss = fx-matrix[x][y][color]
     for i in range(9):
-        weights[i] = weights[i]-alpha*loss*fx*(1-fx)*float(gray_matrix[x+neighbors[i][0]][y+neighbors[i][1]])
+        weights[i] = weights[i]-alpha*loss*float(gray_matrix[x+neighbors[i][0]][y+neighbors[i][1]])*fx*(1-fx)
     #weights[i] = weights[i]-alpha*loss*float(gray_matrix[x+neighbors[i][0]][y+neighbors[i][1]])
 
 if __name__ == '__main__':
-    w = 0.0000001
-    constant = 0.7
+    w = 0.000001
+    constant = 0.0
     setup()
     red_weights = []
     green_weights = []
@@ -77,21 +77,21 @@ if __name__ == '__main__':
         weights.append(w)
     weights.append(constant)
     
-    for i in range(200000):
+    for i in range(1000000): 
         stochastic_descent(0)
     for i in range(10):
         red_weights.append(weights[i])
         weights[i]=w
     weights[9]=constant
 
-    for i in range(200000):
+    for i in range(1000000):
         stochastic_descent(1)
     for i in range(10):
         green_weights.append(weights[i])
         weights[i]=w
     weights[9]=constant
 
-    for i in range(200000):
+    for i in range(1000000):
         stochastic_descent(2)
     for i in range(10):
         blue_weights.append(weights[i])
@@ -114,7 +114,7 @@ if __name__ == '__main__':
                 wx = wx + blue_weights[k]*float(gray_matrix[i+neighbors[k][0]][j+neighbors[k][1]])
             fx = 1/(1+math.exp(-wx))
             bluevalue = int(fx*255)
-            final_pixels[i, j] = (255-redvalue, 255-greenvalue, 255-bluevalue)
+            final_pixels[i, j] = (redvalue, greenvalue, bluevalue)
 
     for i in range(width//2, width-1):
         for j in range(1, height-1):

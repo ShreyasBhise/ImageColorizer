@@ -3,7 +3,7 @@ from PIL import Image
 import random, math, numpy as np
 from collections import Counter
 
-image_tocolor = 'franny.png'
+image_tocolor = 'ocean.jpg'
 
 img = Image.open(image_tocolor)
 pixels = img.load()
