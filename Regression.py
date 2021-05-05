@@ -2,7 +2,7 @@ from PIL import Image
 import random, math, numpy as np
 from collections import Counter
 
-image_tocolor = 'deepfriedrefried.jpg'
+image_tocolor = 'imagedeepfried.jpg'
 
 img = Image.open(image_tocolor)
 pixels = img.load()
@@ -19,7 +19,7 @@ height = img.size[1]
 gray_matrix = []
 matrix = []
 weights = []
-alpha = 0.00001
+alpha = 0.0005
 
 
 def setup():
@@ -30,8 +30,8 @@ def setup():
             p = pixels[i,j]
             gray = int(0.21*p[0] + 0.72*p[1] + 0.07*p[2])
             gray_pixels[i,j] = (gray, gray, gray)
-            gray_row.append(gray)
-            matrix_row.append([p[0]/255.0, p[1]/255.0, p[2]/255.0])
+            gray_row.append(float(gray)/255.0)
+            matrix_row.append([float(p[0])/255.0, float(p[1])/255.0, float(p[2])/255.0])
         gray_matrix.append(gray_row)
         matrix.append(matrix_row)
 
@@ -57,60 +57,73 @@ def stochastic_descent(color):
     neighbors = [[-1,-1], [-1,0], [-1,1], [0,-1], [0,0], [0,1], [1,-1], [1,0], [1,1]]
     x = random.randint(1, width//2-1)
     y = random.randint(1, height-2)
-    wx = 0.0
+    wx = weights[9]
     for i in range(9):
         wx = wx + weights[i]*float(gray_matrix[x+neighbors[i][0]][y+neighbors[i][1]])
     fx = 1/(1+math.exp(-wx))
     loss = fx-matrix[x][y][color]
     for i in range(9):
-        weights[i] = weights[i]-alpha*loss*float(gray_matrix[x+neighbors[i][0]][y+neighbors[i][1]])
-
+        weights[i] = weights[i]-alpha*loss*fx*(1-fx)*float(gray_matrix[x+neighbors[i][0]][y+neighbors[i][1]])
+    #weights[i] = weights[i]-alpha*loss*float(gray_matrix[x+neighbors[i][0]][y+neighbors[i][1]])
 
 if __name__ == '__main__':
-    w = 0.000001
+    w = 0.0000001
+    constant = 0.7
     setup()
     red_weights = []
     green_weights = []
     blue_weights = []
     for i in range(9):
         weights.append(w)
+    weights.append(constant)
     
-    for i in range(5000000):
+    for i in range(200000):
         stochastic_descent(0)
-    for i in range(9):
+    for i in range(10):
         red_weights.append(weights[i])
         weights[i]=w
+    weights[9]=constant
 
-    for i in range(5000000):
+    for i in range(200000):
         stochastic_descent(1)
-    for i in range(9):
+    for i in range(10):
         green_weights.append(weights[i])
         weights[i]=w
+    weights[9]=constant
 
-    for i in range(5000000):
+    for i in range(200000):
         stochastic_descent(2)
-    for i in range(9):
+    for i in range(10):
         blue_weights.append(weights[i])
     
     for i in range(width//2, width-1):
         for j in range(1, height-1):
             neighbors = [[-1,-1], [-1,0], [-1,1], [0,-1], [0,0], [0,1], [1,-1], [1,0], [1,1]]
-            wx = 0.0
+            wx = red_weights[9]
             for k in range(9):
                 wx = wx + red_weights[k]*float(gray_matrix[i+neighbors[k][0]][j+neighbors[k][1]])
             fx = 1/(1+math.exp(-wx))
             redvalue = int(fx*255)
-            wx = 0.0
+            wx = green_weights[9]
             for k in range(9):
                 wx = wx + green_weights[k]*float(gray_matrix[i+neighbors[k][0]][j+neighbors[k][1]])
             fx = 1/(1+math.exp(-wx))
             greenvalue = int(fx*255)
-            wx = 0.0
+            wx = blue_weights[9]
             for k in range(9):
                 wx = wx + blue_weights[k]*float(gray_matrix[i+neighbors[k][0]][j+neighbors[k][1]])
             fx = 1/(1+math.exp(-wx))
             bluevalue = int(fx*255)
-            final_pixels[i, j] = (redvalue, greenvalue, bluevalue)
+            final_pixels[i, j] = (255-redvalue, 255-greenvalue, 255-bluevalue)
+
+    for i in range(width//2, width-1):
+        for j in range(1, height-1):
+            redvalue = final_pixels[i, j][0]
+            greenvalue = final_pixels[i, j][1]
+            bluevalue = final_pixels[i, j][2]
+            gray = 0.21*redvalue + 0.72*greenvalue + 0.07*bluevalue
+            ratio = float(gray_matrix[i][j])/(gray/255)
+            final_pixels[i, j] = (int(redvalue*ratio), int(greenvalue*ratio), int(bluevalue*ratio))
 
     final_img.show()
     print(red_weights)
