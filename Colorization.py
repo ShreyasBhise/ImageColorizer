@@ -135,7 +135,7 @@ def find_six_closest(patch):
 
 if __name__ == '__main__':
      setup()
-     clustering(17)
+     clustering(5)
      
      #For each pixel in the left half of the color image, replace the true color with the nearest representative color from the clustering.
      for i in range(int(width/2)):
