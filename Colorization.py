@@ -3,7 +3,7 @@ from PIL import Image
 import random, math, numpy as np
 from collections import Counter
 
-image_tocolor = 'imagedeepfried.jpg'
+image_tocolor = 'franny.png'
 
 img = Image.open(image_tocolor)
 pixels = img.load()
@@ -44,11 +44,11 @@ def setup():
 
 centers = list()
 pixel_cluster = list()
-#5-means clustering for left side of the image to get 5 major colors to use
-def clustering():
+#k-means clustering for left side of the image to get k major colors to use - 5 for basic agent normally
+def clustering(k: int):
      #randomly assign 5 inital centers
 
-     for _ in range(5):
+     for _ in range(k):
           r = random.randint(0,255)
           g = random.randint(0,255)
           b = random.randint(0,255)
@@ -68,23 +68,20 @@ def clustering():
 
      while change:
           # assign each pixel to closest center
-          avg_clusters = [(0,0,0)]*5
-          cluster_count = [0]*5
+          avg_clusters = [(0,0,0)]*k
+          cluster_count = [0]*k
 
           for i in range(int(width/2)):
                for j in range(height):
                     p = pixels[i,j]
                     min_distance = -1
-                    for cluster_num in range(5):
+                    for cluster_num in range(k):
                          center = centers[cluster_num]
                          c_r = center[0]
                          c_g = center[1]
                          c_b = center[2]
                          distance = (p[0]-c_r)**2 + (p[1]-c_g)**2 + (p[2]-c_b)**2
-                         if min_distance == -1:
-                              min_distance = distance
-                              cluster = cluster_num
-                         elif min_distance > distance:
+                         if min_distance == -1 or min_distance > distance:
                               min_distance = distance
                               cluster = cluster_num
                     pixel_cluster[i][j] = cluster
@@ -97,7 +94,7 @@ def clustering():
           
           #compute new center for each cluster using average
           change = False
-          for i in range(5):
+          for i in range(k):
                if cluster_count[i]==0: continue
                new_center = avg_clusters[i]
                r = int(new_center[0]/cluster_count[i])
@@ -109,7 +106,7 @@ def clustering():
                centers[i] = (r,g,b)
           print(centers)
 
-#Find the six most similar 3x3 grayscale pixel patches in the training data (left half of the black and whiteimage).
+#Find the six most similar 3x3 grayscale pixel patches in the training data (left half of the black and white image).
 def find_six_closest(patch):
      closest_values = [-1]*6
      six_closest = [-1]*6
@@ -138,7 +135,7 @@ def find_six_closest(patch):
 
 if __name__ == '__main__':
      setup()
-     clustering()
+     clustering(17)
      
      #For each pixel in the left half of the color image, replace the true color with the nearest representative color from the clustering.
      for i in range(int(width/2)):
