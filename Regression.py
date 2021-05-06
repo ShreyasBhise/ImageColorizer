@@ -125,5 +125,31 @@ if __name__ == '__main__':
             ratio = float(gray_matrix[i][j])/(gray/255)
             final_pixels[i, j] = (int(redvalue*ratio), int(greenvalue*ratio), int(bluevalue*ratio))
 
+    sum = 0.0
+    for i in range(width//2, width-1):
+        for j in range(1, height-1):
+            redvalue = final_pixels[i, j][0]
+            greenvalue = final_pixels[i, j][1]
+            bluevalue = final_pixels[i, j][2]
+            val = 0.0
+            for k in range(3):
+                val = val+abs(pixels[i, j][k]-final_pixels[i, j][k])
+            val = val**2
+            sum+=val
+    print("L2 sum")
+    print(sum)
+    sum = 0.0
+    for i in range(width//2, width-1):
+        for j in range(1, height-1):
+            redvalue = final_pixels[i, j][0]
+            greenvalue = final_pixels[i, j][1]
+            bluevalue = final_pixels[i, j][2]
+            val = 0.0
+            for k in range(3):
+                val = val+abs(pixels[i, j][k]-final_pixels[i, j][k])
+            sum+=val
+    print("L1 sum")
+    print(sum)
+
     final_img.show()
     print(red_weights)
